@@ -369,4 +369,4 @@ FodyWeavers.xsd
 
 appsettings.json
 /NicoPasino/wwwroot/movie
-/NicoPasino/conexion.env
+/NicoPasino/.env
