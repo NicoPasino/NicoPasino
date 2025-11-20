@@ -1,5 +1,5 @@
 ﻿using NicoPasino.Core.DTO.Movies;
-using NicoPasino.Core.Modelos.Movies;
+using NicoPasino.Core.Modelos.MoviesMySql;
 
 namespace NicoPasino.Core.Mapper.Movies
 {
@@ -16,11 +16,12 @@ namespace NicoPasino.Core.Mapper.Movies
                 objetoDTO.duration = movieModel.Duration;
                 objetoDTO.poster = movieModel.Poster;
                 objetoDTO.rate = movieModel.Rate;
-                if (movieModel.Genre != null && movieModel.Genre.Any()) {
-                    objetoDTO.genreIds = movieModel.Genre.Select(g => g.Id).ToList();
-                    objetoDTO.genreNames = movieModel.Genre.Select(g => g.Name).ToList();
+                if (movieModel.Moviegenres != null && movieModel.Moviegenres.Any()) {
+                    objetoDTO.genreIds = movieModel.Moviegenres.Select(g => g.Id).ToList();
+                    objetoDTO.genreNames = movieModel.Moviegenres.Select(g => g.Genre.Name).ToList();
                 }
             } catch (Exception ex) {
+                // No propagar excepciones desde el mapper
             }
             return objetoDTO;
         }
@@ -40,10 +41,9 @@ namespace NicoPasino.Core.Mapper.Movies
 
         public static Movie ConvertToMovie(MovieDto objeto) {
             var model = new Movie();
-            Random random = new Random();
 
             try {
-                model.IdPublica = objeto.idPublica ?? random.Next(1, 9999999);
+                model.IdPublica = objeto.idPublica;
                 model.Title = objeto.title;
                 model.Year = objeto.year;
                 model.Director = objeto.director;
@@ -53,14 +53,8 @@ namespace NicoPasino.Core.Mapper.Movies
                 model.Activo = true;
                 model.FechaModificacion = DateTime.Now;
 
-                // TODO: hacer manualmente en todos los ConvertToMovie
-                /*
-                // Mapear géneros seleccionados (ids) a entidades Genre para la relación many-to-many
-                if (objeto.genreIds != null && objeto.genreIds.Any()) {
-                    var generos = await _contexto.Genre.Where(g => objeto.genreIds.Contains(g.Id)).ToListAsync();
-                    model.Genre = generos;
-                }*/
-
+                // NOTA: el mapeo de genre a entidades se realiza en el servicio (MovieServicio),
+                // porque el mapper no tiene acceso al contexto/repositorio.
             } catch (Exception ex) {
 
             }

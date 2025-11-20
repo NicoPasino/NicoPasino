@@ -1,3 +1,4 @@
+using dotenv.net;
 using Microsoft.EntityFrameworkCore;
 using NicoPasino.Core.Interfaces;
 using NicoPasino.Infra.Data;
@@ -13,9 +14,17 @@ namespace NicoPasino
             builder.Services.AddControllersWithViews();
 
             // conexion
-            builder.Services.AddDbContext<moviesdbContext>(options =>
+            /* SQL Server
+             * builder.Services.AddDbContext<moviesdbContext>(options =>
             options.UseSqlServer(builder.Configuration.GetConnectionString("MoviesConnectionString"))
-            );
+            );*/
+            DotEnv.Load(); // del paquete dotenv.net
+            var connectionString = Environment.GetEnvironmentVariable("DefaultConnection");
+            //var connectionString = builder.Configuration.GetConnectionString("DefaultConnection2");
+            builder.Services.AddDbContext<moviesdbContext>(options =>
+            options.UseMySql(
+                connectionString, new MySqlServerVersion(new Version(8, 0, 39))
+            ));
 
             // permitir inyeccion
             builder.Services.AddScoped<IMovieServicio, MovieServicio>();
@@ -24,9 +33,14 @@ namespace NicoPasino
 
             var app = builder.Build();
 
+            // crear una base de datos a travez de una migracion
+            /*using (var scope = app.Services.CreateScope()) {
+                var context = scope.ServiceProvider.GetRequiredService<moviesdbContext>();
+                context.Database.Migrate();
+            }*/
+
             if (!app.Environment.IsDevelopment()) {
                 app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 

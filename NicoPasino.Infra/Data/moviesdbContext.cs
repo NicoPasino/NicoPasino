@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-using NicoPasino.Core.Modelos.Movies;
+using NicoPasino.Core.Modelos.MoviesMySql;
 
 namespace NicoPasino.Infra.Data;
 
@@ -18,73 +18,80 @@ public partial class moviesdbContext : DbContext
 
     public virtual DbSet<Movie> Movie { get; set; }
 
+    public virtual DbSet<Moviegenres> Moviegenres { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder
+            .UseCollation("utf8mb4_0900_ai_ci")
+            .HasCharSet("utf8mb4");
+
         modelBuilder.Entity<Genre>(entity =>
         {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
             entity.ToTable("genre");
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Name)
                 .IsRequired()
                 .HasMaxLength(50)
-                .IsUnicode(false)
                 .HasColumnName("name");
         });
 
         modelBuilder.Entity<Movie>(entity =>
         {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
             entity.ToTable("movie");
 
             entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.IdPublica).HasColumnName("idPublica");
             entity.Property(e => e.Activo)
-                .HasDefaultValue(true)
-                .HasAnnotation("Relational:DefaultConstraintName", "DF_movie_activo")
+                .HasColumnType("bit(1)")
                 .HasColumnName("activo");
             entity.Property(e => e.Director)
-                .IsRequired()
                 .HasMaxLength(255)
-                .IsUnicode(false)
                 .HasColumnName("director");
             entity.Property(e => e.Duration).HasColumnName("duration");
             entity.Property(e => e.FechaCreacion)
-                .HasColumnType("datetime")
+                .HasMaxLength(6)
                 .HasColumnName("fechaCreacion");
             entity.Property(e => e.FechaModificacion)
-                .HasColumnType("datetime")
+                .HasMaxLength(6)
                 .HasColumnName("fechaModificacion");
-            entity.Property(e => e.Poster)
-                .HasColumnType("text")
-                .HasColumnName("poster");
+            entity.Property(e => e.IdPublica).HasColumnName("idPublica");
+            entity.Property(e => e.Poster).HasColumnName("poster");
             entity.Property(e => e.Rate)
-                .HasColumnType("decimal(2, 1)")
+                .HasPrecision(2, 1)
                 .HasColumnName("rate");
             entity.Property(e => e.Title)
                 .IsRequired()
                 .HasMaxLength(255)
-                .IsUnicode(false)
                 .HasColumnName("title");
             entity.Property(e => e.Year).HasColumnName("year");
+        });
 
-            entity.HasMany(d => d.Genre).WithMany(p => p.Movie)
-                .UsingEntity<Dictionary<string, object>>(
-                    "MovieGenres",
-                    r => r.HasOne<Genre>().WithMany()
-                        .HasForeignKey("GenreId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK__movie_gen__genre__2B3F6F97"),
-                    l => l.HasOne<Movie>().WithMany()
-                        .HasForeignKey("MovieId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK__movie_gen__movie__2A4B4B5E"),
-                    j =>
-                    {
-                        j.HasKey("MovieId", "GenreId").HasName("PK__movie_ge__B249DF9D6711EEA6");
-                        j.ToTable("movieGenres");
-                        j.IndexerProperty<int>("MovieId").HasColumnName("movieId");
-                        j.IndexerProperty<int>("GenreId").HasColumnName("genreId");
-                    });
+        modelBuilder.Entity<Moviegenres>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.ToTable("moviegenres");
+
+            entity.HasIndex(e => e.GenreId, "fk_moviegenres_genre");
+
+            entity.HasIndex(e => e.MovieId, "fk_moviegenres_movie");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.GenreId).HasColumnName("genreId");
+            entity.Property(e => e.MovieId).HasColumnName("movieId");
+
+            entity.HasOne(d => d.Genre).WithMany(p => p.Moviegenres)
+                .HasForeignKey(d => d.GenreId)
+                .HasConstraintName("fk_moviegenres_genre");
+
+            entity.HasOne(d => d.Movie).WithMany(p => p.Moviegenres)
+                .HasForeignKey(d => d.MovieId)
+                .HasConstraintName("fk_moviegenres_movie");
         });
 
         OnModelCreatingPartial(modelBuilder);

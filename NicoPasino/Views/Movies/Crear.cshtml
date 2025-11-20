@@ -1,4 +1,4 @@
-﻿@using NicoPasino.Core.DTO.Movies;
+﻿@using NicoPasino.Core.Modelos.MoviesMySql;
 @model NicoPasino.Core.DTO.Movies.MovieDto
 @{
     ViewData["Title"] = "Nueva pelicula";
@@ -50,7 +50,7 @@
             </div>
             <div class="generos col-10 col-md-6">
                 <select asp-for="genreIds" class="form-select" multiple="multiple" size="6"
-                        asp-items="@(new SelectList((IEnumerable<NicoPasino.Core.Modelos.Movies.Genre>)ViewBag.generos, "Id", "Name"))">
+                        asp-items="@(new SelectList((IEnumerable<Genre>)ViewBag.generos, "Id", "Name"))">
                 </select>
                 <span asp-validation-for="genreIds" class="text-danger"></span>
             </div>

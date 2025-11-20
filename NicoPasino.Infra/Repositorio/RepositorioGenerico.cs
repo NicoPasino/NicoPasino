@@ -29,9 +29,21 @@ namespace NicoPasino.Infra.Repositorio
             return entity;
         }
 
-        public async Task Update(T entity) {
-            _dbSet.Update(entity);
+        public async Task AddRange(IEnumerable<T> entities) {
+            await _dbSet.AddRangeAsync(entities);
             await _context.SaveChangesAsync();
+            return;
+        }
+
+        public async Task<int> Update(T entity) {
+            _dbSet.Update(entity);
+            return _context.SaveChanges();
+        }
+
+        public async Task DeleteRange(IEnumerable<T> entities) {
+            _dbSet.RemoveRange(entities);
+            await _context.SaveChangesAsync();
+            return;
         }
 
         public async Task<T> GetAsync(Expression<Func<T, bool>>? filtro = null, string incluir = "") {

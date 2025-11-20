@@ -7,7 +7,7 @@
    "MinimumProductVersion": "2.6.1166",
    "ModelNamespace": null,
    "OutputContextPath": null,
-   "OutputPath": "Modelos\/Movies",
+   "OutputPath": "Modelos\/MoviesMySql",
    "PreserveCasingWithRegex": true,
    "ProjectRootNamespace": "NicoPasino.Core",
    "Schemas": null,
@@ -16,15 +16,15 @@
    "T4TemplatePath": null,
    "Tables": [
       {
-         "Name": "[dbo].[genre]",
+         "Name": "genre",
          "ObjectType": 0
       },
       {
-         "Name": "[dbo].[movie]",
+         "Name": "movie",
          "ObjectType": 0
       },
       {
-         "Name": "[dbo].[movieGenres]",
+         "Name": "moviegenres",
          "ObjectType": 0
       }
    ],

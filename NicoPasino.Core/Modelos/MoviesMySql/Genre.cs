@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace NicoPasino.Core.Modelos.Movies;
+namespace NicoPasino.Core.Modelos.MoviesMySql;
 
 public partial class Genre
 {
@@ -11,5 +11,5 @@ public partial class Genre
 
     public string Name { get; set; }
 
-    public virtual ICollection<Movie> Movie { get; set; } = new List<Movie>();
+    public virtual ICollection<Moviegenres> Moviegenres { get; set; } = new List<Moviegenres>();
 }

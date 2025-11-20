@@ -1,4 +1,5 @@
-﻿@model NicoPasino.Core.DTO.Movies.MovieDto
+﻿@using NicoPasino.Core.Modelos.MoviesMySql;
+@model NicoPasino.Core.DTO.Movies.MovieDto
 @{
     ViewData["Title"] = "Modificar: " + Model.title;
 }
@@ -9,7 +10,7 @@
         <input asp-for="idPublica" type="hidden" />
         <!-- class= "needs-validation" -->
         <div class="col-sm-5 col-md-5">
-            <label asp-for="title" class="form-label">Titulo (id: @Model.idPublica)</label>
+            <label asp-for="title" class="form-label">Titulo</label>
             <input asp-for="title" class="form-control" />
             <span asp-validation-for="title" class="text-danger"></span>
         </div>
@@ -50,7 +51,7 @@
             </div>
             <div class="generos col-10 col-md-6">
                 <select asp-for="genreIds" class="form-select" multiple="multiple" size="6"
-                        asp-items="@(new SelectList((IEnumerable<NicoPasino.Core.Modelos.Movies.Genre>)ViewBag.generos, "Id", "Name"))">
+                        asp-items="@(new SelectList((IEnumerable<Genre>)ViewBag.generos, "Id", "Name"))">
                 </select>
                 <span asp-validation-for="genreIds" class="text-danger"></span>
             </div>

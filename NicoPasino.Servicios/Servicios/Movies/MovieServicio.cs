@@ -1,105 +1,132 @@
-﻿using Microsoft.Extensions.Logging;
-using NicoPasino.Core.DTO.Movies;
+﻿using NicoPasino.Core.DTO.Movies;
 using NicoPasino.Core.Interfaces;
 using NicoPasino.Core.Mapper.Movies;
-using NicoPasino.Core.Modelos.Movies;
-using System.Linq.Expressions;
+using NicoPasino.Core.Modelos.MoviesMySql;
 
 namespace NicoPasino.Servicios.Servicios.Movies
 {
     public class MovieServicio : IMovieServicio
     {
         private readonly IRepositorioGenerico<Movie> _repoG;
+        private readonly IRepositorioGenerico<Moviegenres> _repoMovieGenres;
         private readonly IUnitOfWork _uow;
-        private readonly ILogger<MovieServicio> _logger;
 
-        public MovieServicio(IUnitOfWork uow, IRepositorioGenerico<Movie> repoG, ILogger<MovieServicio> logger) {
+        public MovieServicio(IUnitOfWork uow, IRepositorioGenerico<Movie> repoG, IRepositorioGenerico<Moviegenres> repoMovieGenres) {
             _uow = uow ?? throw new ArgumentNullException(nameof(uow));
             _repoG = repoG ?? throw new ArgumentNullException(nameof(repoG));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _repoMovieGenres = repoMovieGenres ?? throw new ArgumentNullException(nameof(repoMovieGenres));
         }
 
-        public async Task<IEnumerable<MovieDto>> GetAll(string? titulo = "", int? idGenero = null) {
+        public async Task<IEnumerable<MovieDto>> GetAll() {
+            try {
+                var moviesDb = await _repoG.ListarAsync(
+                    filtro: m => m.Activo,
+                    orden: q => q.OrderByDescending(m => m.FechaModificacion ?? m.FechaCreacion),
+                    incluir: "Moviegenres"
+                );
+
+                // si hay peliculas...
+                if (moviesDb != null && moviesDb.Any()) {
+                    var moviesDto = MovieMapper.ConvertToDtoList(moviesDb);
+                    return moviesDto;
+                }
+                return Enumerable.Empty<MovieDto>();
+            } catch (Exception ex) {
+                return Enumerable.Empty<MovieDto>();
+            }
+        }
+
+        public async Task<IEnumerable<MovieDto>> GetAll(string? titulo = "") {
             try {
                 titulo = titulo?.Trim();
                 if (!string.IsNullOrEmpty(titulo) && titulo.Length > 200) {
                     titulo = titulo.Substring(0, 200);
                 }
 
+                var moviesDb = await _repoG.ListarAsync(
+                    filtro: m => m.Activo && (string.IsNullOrEmpty(titulo) || m.Title.Contains(titulo)),
+                    orden: q => q.OrderByDescending(m => m.FechaModificacion ?? m.FechaCreacion),
+                    incluir: "Moviegenres"
+                );
+
+                // si hay peliculas...
+                if (moviesDb != null && moviesDb.Any()) {
+                    var moviesDto = MovieMapper.ConvertToDtoList(moviesDb);
+                    return moviesDto;
+                }
+
+                return Enumerable.Empty<MovieDto>();
+            } catch (Exception ex) {
+                return Enumerable.Empty<MovieDto>();
+            }
+        }
+
+        public async Task<IEnumerable<MovieDto>> GetAll(int? idGenero = null) {
+            try {
                 if (idGenero.HasValue && idGenero.Value <= 0) {
                     idGenero = null;
                 }
 
-                // Construcción del filtro de forma segura: se combinan las condiciones opcionales
-                Expression<Func<Movie, bool>> filtro = m =>
-                    m.Activo
-                    && (string.IsNullOrEmpty(titulo) || m.Title.Contains(titulo))
-                    && (!idGenero.HasValue || (m.Genre != null && m.Genre.Any(g => g.Id == idGenero.Value)));
-
-                var entidades = await _repoG.ListarAsync(
-                    filtro: filtro,
+                var moviesDb = await _repoG.ListarAsync(
+                    filtro: m => m.Activo && (!idGenero.HasValue || (m.Moviegenres != null && m.Moviegenres.Any(g => g.GenreId == idGenero.Value))),
                     orden: q => q.OrderByDescending(m => m.FechaModificacion ?? m.FechaCreacion),
-                    incluir: "Genre"
+                    incluir: "Moviegenres"
                 );
 
-                if (entidades != null && entidades.Any())
-                    return MovieMapper.ConvertToDtoList(entidades);
+                // si hay peliculas...
+                if (moviesDb != null && moviesDb.Any()) {
+                    var moviesDto = MovieMapper.ConvertToDtoList(moviesDb);
+                    return moviesDto;
+                }
 
                 return Enumerable.Empty<MovieDto>();
             } catch (Exception ex) {
-                // Registro seguro del error sin exponer detalles sensibles
-                _logger.LogError(ex, "MovieServicio.GetAll fallo. titulo={Titulo} idGenero={IdGenero}", titulo, idGenero);
                 return Enumerable.Empty<MovieDto>();
             }
         }
 
         public async Task<MovieDto> GetById(int id) {
+            if (id <= 0) return null;
             try {
                 var objDb = await _repoG.GetAsync(
                     filtro: m => m.IdPublica == id,
-                    incluir: "Genre"
+                    incluir: "Moviegenres"
                 );
 
-                if (objDb != null) return MovieMapper.ConvertToDto(objDb);
+                if (objDb != null) {
+                    var movieDto = MovieMapper.ConvertToDto(objDb);
+                    return movieDto;
+                }
 
                 return null;
             } catch (Exception ex) {
-                _logger.LogError(ex, "MovieServicio.GetById fallo. id={Id}", id);
                 return null;
             }
         }
 
         public async Task<bool> Create(MovieDto objDto) {
+            Random random = new Random();
             if (objDto == null) throw new ArgumentNullException(nameof(objDto));
 
             try {
-                var _repoGenre = _uow.Repositorio<Genre>();
-                var movie = MovieMapper.ConvertToMovie(objDto) ?? new Movie();
-
-                // Mapear géneros de forma segura
-                if (objDto.genreIds != null && objDto.genreIds.Any()) {
-                    var generos = await _repoGenre.ListarAsync(filtro: g => objDto.genreIds.Contains(g.Id));
-                    movie.Genre = generos?.ToList() ?? new List<Genre>();
-                }
-                else {
-                    movie.Genre = movie.Genre ?? new List<Genre>();
-                }
+                objDto.idPublica = random.Next(1, 9999999);
+                var movie = MovieMapper.ConvertToMovie(objDto);
 
                 movie.FechaCreacion = DateTime.UtcNow;
                 movie.Activo = true;
 
-                await _repoG.Add(movie);
+                var res = await _repoG.Add(movie);
 
-                // Guardar cambios si la unidad de trabajo lo requiere
-                try {
+                // Agregar géneros si se añadió la pelicula correctamente
+                var genreIds = objDto.genreIds;
+                if (genreIds != null && genreIds.Any() && res != null) {
+                    await GuardarMovieGenre(movie.Id, genreIds);
                     await _uow.SaveChangesAsync();
-                } catch (Exception saveEx) {
-                    _logger.LogWarning(saveEx, "SaveChangesAsync falló después de Add en Create. Se intentó añadir la película pero no se guardaron los cambios.");
+                    return true;
                 }
-
-                return true;
+                else
+                    return false;
             } catch (Exception ex) {
-                _logger.LogError(ex, "MovieServicio.Create fallo. Title={Title}", objDto?.title);
                 return false;
             }
         }
@@ -108,46 +135,33 @@ namespace NicoPasino.Servicios.Servicios.Movies
             if (obj == null) throw new ArgumentNullException(nameof(obj));
 
             try {
-                var _repoGenre = _uow.Repositorio<Genre>();
-
-                var objDb = await _repoG.GetAsync(
-                    filtro: x => x.IdPublica == obj.idPublica,
-                    incluir: "Genre"
-                );
+                var objDb = await _repoG.GetAsync(filtro: x => x.IdPublica == obj.idPublica, incluir: "Moviegenres");
 
                 if (objDb == null) return false;
 
-                objDb.Title = obj.title ?? objDb.Title;
-                objDb.Year = obj.year;
-                objDb.Director = obj.director ?? objDb.Director;
-                objDb.Duration = obj.duration;
-                objDb.Poster = obj.poster ?? objDb.Poster;
-                objDb.FechaModificacion = DateTime.UtcNow;
-                objDb.Activo = true;
+                var movie = MovieMapper.ConvertToMovie(obj);
 
-                if (obj.genreIds != null) {
-                    var generos = obj.genreIds.Any()
-                        ? (await _repoGenre.ListarAsync(filtro: g => obj.genreIds.Contains(g.Id))).ToList()
-                        : new List<Genre>();
+                movie.Id = objDb.Id;
+                movie.FechaCreacion = objDb.FechaCreacion;
 
-                    objDb.Genre = objDb.Genre ?? new List<Genre>();
-                    objDb.Genre.Clear();
-                    foreach (var g in generos) {
-                        objDb.Genre.Add(g);
-                    }
-                }
-
-                await _repoG.Update(objDb);
+                var res = _repoG.Update(movie);
 
                 try {
-                    await _uow.SaveChangesAsync();
-                } catch (Exception saveEx) {
-                    _logger.LogWarning(saveEx, "SaveChangesAsync falló después de Update en Update. idPublica={Id}", obj.idPublica);
+                    // Agregar géneros si se añadió la pelicula correctamente
+                    var genreIds = obj.genreIds;
+                    if (genreIds != null && genreIds.Any() /*&& res > 0*/) { // TODO
+                        await GuardarMovieGenre(objDb.Id, genreIds);
+                        await _uow.SaveChangesAsync();
+                        return true;
+                    }
+                    else return false;
+                } catch (Exception ex) {
+                    return false;
                 }
 
-                return true;
             } catch (Exception ex) {
-                _logger.LogError(ex, "MovieServicio.Update fallo. idPublica={Id}", obj?.idPublica);
+                Console.WriteLine(ex);
+
                 return false;
             }
         }
@@ -155,8 +169,7 @@ namespace NicoPasino.Servicios.Servicios.Movies
         public async Task<bool> Delete(int id) {
             try {
                 var objDb = await _repoG.GetAsync(
-                    filtro: m => m.IdPublica == id,
-                    incluir: "Genre"
+                    filtro: m => m.IdPublica == id
                 );
 
                 if (objDb != null) {
@@ -168,7 +181,6 @@ namespace NicoPasino.Servicios.Servicios.Movies
                     try {
                         await _uow.SaveChangesAsync();
                     } catch (Exception saveEx) {
-                        _logger.LogWarning(saveEx, "SaveChangesAsync falló después de Update en Delete. idPublica={Id}", id);
                     }
 
                     return true;
@@ -176,20 +188,56 @@ namespace NicoPasino.Servicios.Servicios.Movies
 
                 return false;
             } catch (Exception ex) {
-                _logger.LogError(ex, "MovieServicio.Delete fallo. id={Id}", id);
                 return false;
             }
         }
 
         public async Task<IEnumerable<Genre>> GetGenres() {
             try {
-                var _repoGenre = _uow.Repositorio<Genre>();
-                var generos = await _repoGenre.GetAll();
+                var _repoGenres = _uow.Repositorio<Genre>();
+                var generos = await _repoGenres.GetAll();
                 return generos ?? Enumerable.Empty<Genre>();
             } catch (Exception ex) {
-                _logger.LogError(ex, "MovieServicio.GetGenres fallo.");
                 return Enumerable.Empty<Genre>();
             }
         }
+
+        public async Task GuardarMovieGenre(int movieId, IEnumerable<int> genreIds) {
+            // borrar generos anteriores si existen
+            var movieGenres = await _repoMovieGenres.ListarAsync(filtro: mg => mg.MovieId == movieId);
+            if (movieGenres != null) {
+                await _repoMovieGenres.DeleteRange(movieGenres);
+                await _uow.SaveChangesAsync();
+            }
+
+            // agregar nuevos géneros
+            foreach (var id in genreIds) {
+                var gen = new Moviegenres { MovieId = movieId, GenreId = id };
+                await _repoMovieGenres.Add(gen);
+            }
+        }
+
+        /*public async Task<IEnumerable<string>> GetGenreNamesByMovieIdPublica(int idPublica) {
+            try {
+                if (idPublica <= 0) return Enumerable.Empty<string>();
+
+                var movie = await _repoG.GetAsync(filtro: m => m.IdPublica == idPublica);
+                if (movie == null) return Enumerable.Empty<string>();
+
+                // obtener las relaciones Moviegenres incluyendo la entidad Genre para tomar su nombre.
+                var movieGenres = await _repoMovieGenres.ListarAsync(filtro: mg => mg.MovieId == movie.Id, incluir: "Genre");
+                if (movieGenres == null || !movieGenres.Any()) return Enumerable.Empty<string>();
+
+                var names = movieGenres
+                    .Select(mg => mg.Genre?.Name)
+                    .Where(n => !string.IsNullOrWhiteSpace(n))
+                    .Distinct()
+                    .ToList();
+
+                return names;
+            } catch (Exception) {
+                return Enumerable.Empty<string>();
+            }
+        }*/
     }
 }

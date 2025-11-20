@@ -58,12 +58,19 @@ namespace NicoPasino.Controllers
                 var generos = await _servicio.GetGenres();
                 ViewBag.generos = generos ?? Enumerable.Empty<object>();
 
-                // Normalizar inputs básicos
-                titulo = titulo?.Trim();
-                if (!string.IsNullOrEmpty(titulo) && titulo.Length > 200) titulo = titulo[..200];
-                if (idGenero.HasValue && idGenero.Value <= 0) idGenero = null;
+                var movies = Enumerable.Empty<MovieDto>();
 
-                var movies = await _servicio.GetAll(titulo, idGenero);
+                titulo = titulo?.Trim();
+                if (!string.IsNullOrEmpty(titulo)) {
+                    if (titulo.Length > 200) titulo = titulo[..200];
+                    movies = await _servicio.GetAll(titulo);
+
+                }
+                if (idGenero.HasValue && idGenero.Value > 0) {
+                    movies = await _servicio.GetAll(idGenero);
+                }
+
+
                 if (movies == null || !movies.Any()) {
                     TempData["Msg"] = "No se encontró ninguna película con los criterios indicados.";
                     TempData["Tipo"] = "info";
