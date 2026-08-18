@@ -1,127 +1,178 @@
 ﻿@{
     ViewData["Title"] = "Inicio";
-    var dominio = "nicopasino.space";
 }
 
 <link rel="stylesheet" href="~/css/IndexPortafolio.css" />
+<link rel="stylesheet" href="~/css/Proyectos.css" />
+<link rel="stylesheet" href="~/lib/glightbox/css/glightbox.min.css" />
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
-
 
 <div class="stars"></div>
 <div class="astronautaCV">
     <a href="~/imgs/CV-Nicolas-Pasino.pdf" target="_blank"><img src="~/imgs/verCV.png" alt="ver mi CV"></a>
 </div>
 
-<!-- Nombre -->
-<header>> Nicolás Pasino <</header>
-
-<!-- Sobre Mí -->
-<section class="about">
-    <div class="changeBtn I" onclick="changeDiv()"><</div>
-    <div class="aboutCont">
-        <div class="cont" id="cont1">
-            <h2>Sobre mí</h2>
-            <p class="aboutText">Hola, soy Nicolás, un desarrollador full-stack apasionado por crear soluciones que no solo funcionen, sino que brillen en la oscuridad del espacio digital. Este portafolio es mi pequeña nave espacial para mostrarte mis proyectos más destacados. ¡Bienvenido a bordo!</p>
-        </div>
-        <div class="cont iconos" id="cont2">
-            <img src="~/imgs/icons/HTML5.svg" alt="HTML" title="HTML">
-            <img src="~/imgs/icons/CSS.svg" alt="CSS" title="CSS">
-            <img src="~/imgs/icons/JavaScript.svg" alt="JavaScript" title="JavaScript">
-            <img src="~/imgs/icons/Typescript.svg" alt="TypeScript" title="TypeScript">
-            <img src="~/imgs/icons/Bootstrap.svg" alt="Bootstrap" title="Bootstrap">
-            <img src="~/imgs/icons/React.svg" alt="React" title="React / Native">
-            <img src="~/imgs/icons/Nodejs.svg" alt="Node.js" title="Node.js">
-            <img src="~/imgs/icons/NET.svg" alt=".NET" title=".NET">
-            <img src="~/imgs/icons/AWS.svg" alt="AWS" title="AWS">
-            <img src="~/imgs/icons/Docker.svg" alt="Docker" title="Docker">
-            <img src="~/imgs/icons/mysql.svg" alt="MySQL" title="MySQL">
-            <img src="~/imgs/icons/Git.svg" alt="Git" title="Git">
-        </div>
-    </div>
-    <div class="changeBtn D" onclick="changeDiv()">></div>
-</section>
+<div class="hero">
+  <div class="hero-title">
+      <header>> Nicolás Pasino <</header>
+  </div>
+  <div class="hero-subtitle">
+      <span id="typewriter-text"></span><span class="cursor">█</span>
+  </div>
+</div>
 
 <!-- Proyectos -->
-<section class="projects">
-
-    <div class="card" onclick="window.location = 'https://sistema-ventas.@dominio'">
-        <div class="cardHeader">
-            <p class="cardTitle"> Sistema de Ventas </p>
-            <div class="cardIcons">
-                <img class="small" src="~/imgs/icons/React.svg" alt="React.js" title="React.js">
-                <img class="small" src="~/imgs/icons/NET.svg" alt=".NET" title="ASP.NET Core MVC">
-                <img class="small" src="~/imgs/icons/mysql.svg" alt="MySQL" title="MySQL">
-            </div>
-        </div>
-        <p class="cardText"> Gestiona tus productos y ventas a otro nivel.</p>
+<section>
+    <div class="section-title">
+        <h1>Proyectos</h1>
+        @* <p>Cada proyecto, una nueva órbita.</p> *@
     </div>
 
-    <div class="card" onclick="window.location = 'https://notas.@dominio'">
-        <div class="cardHeader">
-            <p class="cardTitle"> Notas </p>
-            <div class="cardIcons">
-                <img class="small" src="~/imgs/icons/React.svg" alt="React.js" title="React Native">
-                <img class="small" src="~/imgs/icons/NET.svg" alt=".NET" title="ASP.NET Core MVC">
-                @* <img class="small" src="~/imgs/icons/Nodejs.svg" alt="Node.js" title="Node.js"> *@
-                <img class="small" src="~/imgs/icons/mysql.svg" alt="MySQL" title="MySQL">
-            </div>
-        </div>
-        <p class="cardText"> Tus ideas en órbita, siempre al alcance.</p>
-    </div>
-
-    <div class="card" onclick="window.location = 'https://@dominio/movies'">
-        <div class="cardHeader">
-            <p class="cardTitle"> Películas </p>
-            <div class="cardIcons">
-                <!-- <img class="small" src="~/imgs/icons/Nodejs.svg" alt="Node.js" title="Node.js"> -->
-                <img class="small" src="~/imgs/icons/NET.svg" alt=".NET" title="ASP.NET Core MVC">
-                <img class="small" src="~/imgs/icons/mysql.svg" alt="MySQL" title="MySQL">
-            </div>
-        </div>
-        <p class="cardText"> Explora el cine del cosmos sin necesidad de un telescopio.</p>
-    </div>
+    @await Html.PartialAsync("Partials/_ProyectosContenido")
 </section>
+
+<!-- Tecnologías & Contactos -->
+<div class="tech-contact-wrapper">
+    <!-- Tecnologías -->
+    <section class="tech-section">
+        <div class="section-title">
+            <h1>Tecnologías</h1>
+        </div>
+
+        <div class="tech-group">
+            <h3 class="tech-category">Frontend</h3>
+            <div class="tech-icons">
+                <img src="~/imgs/icons/JavaScript.svg" alt="JavaScript" title="JavaScript">
+                <img src="~/imgs/icons/Typescript.svg" alt="TypeScript" title="TypeScript">
+                <img src="~/imgs/icons/React.svg" alt="React" title="React / Native">
+            </div>
+        </div>
+
+        <div class="tech-group">
+            <h3 class="tech-category">Backend</h3>
+            <div class="tech-icons">
+                <img src="~/imgs/icons/NET.svg" alt=".NET" title=".NET">
+                <img src="~/imgs/icons/Nodejs.svg" alt="Node.js" title="Node.js">
+                <img src="~/imgs/icons/mysql.svg" alt="MySQL" title="MySQL">
+            </div>
+        </div>
+
+        <div class="tech-group">
+            <h3 class="tech-category">DevOps & Herramientas</h3>
+            <div class="tech-icons">
+                <img src="~/imgs/icons/AWS.svg" alt="AWS" title="AWS">
+                <img src="~/imgs/icons/Docker.svg" alt="Docker" title="Docker">
+                <img src="~/imgs/icons/Git.svg" alt="Git" title="Git">
+            </div>
+        </div>
+    </section>
+
+    <!-- Contactos -->
+    <section class="contact-section">
+        <div class="section-title">
+            <h1>Contacto</h1>
+        </div>
+        <div class="contact-list">
+            <a href="https://www.linkedin.com/in/nicolas-pasino" class="contact-btn" target="_blank">
+                <img src="~/imgs/icons/Linkedin_w.svg" alt="Linkedin">
+                <span>Nicolás Pasino</span>
+            </a>
+            <a href="https://github.com/NicoPasino" class="contact-btn" target="_blank">
+                <img src="~/imgs/icons/github_w.svg" alt="Github">
+                <span>NicoPasino</span>
+            </a>
+            <a href="https://wa.me/5493515210862" class="contact-btn" target="_blank">
+                <img src="~/imgs/icons/WhatsApp_w.svg" alt="Whatsapp">
+                <span>+54 9 351 521 0862</span>
+            </a>
+            <a href="mailto:nico_pasino@hotmail.com" class="contact-btn">
+                <img src="~/imgs/icons/mail_w.svg" alt="Email">
+                <span>nico_pasino@hotmail.com</span>
+            </a>
+        </div>
+    </section>
+</div>
 
 <!-- Footer -->
 <footer>
-    <div class="social-icons">
-        <a href="https://www.linkedin.com/in/nicolas-pasino"><img src="~/imgs/icons/Linkedin_w.svg" alt="Linkedin"></a>
-        <a href="https://github.com/NicoPasino"><img src="~/imgs/icons/github_w.svg" alt="Github"></a>
-        <a href="https://wa.me/5493515210862"><img src="~/imgs/icons/WhatsApp_w.svg" alt="Whatsapp"></a>
-        <a href="mailto:nico_pasino@hotmail.com"><img src="~/imgs/icons/mail_w.svg" alt="EMail"></a>
-    </div>
+    <p>© 2026 Nicolás Pasino</p>
 </footer>
 
 <!-- Script -->
+@section Scripts {
+<script src="~/lib/glightbox/js/glightbox.min.js"></script>
 <script>
-    const { protocol, hostname } = window.location;
-    const host = `${protocol}//${hostname}`;
+    // Acordeón: toggle expand/collapse
+    function toggleAccordion(header) {
+        const accordion = header.parentElement;
+        const wasActive = accordion.classList.contains('active');
 
-    function goTo(donde) {
-      window.location = host + donde;
+        document.querySelectorAll('.accordion.active').forEach(a => {
+            a.classList.remove('active');
+        });
+
+        if (!wasActive) {
+            accordion.classList.add('active');
+        }
     }
 
-    const contenido1 = document.getElementById('cont1');
-    const contenido2 = document.getElementById('cont2');
+    // Typewriter: frases rotativas con efecto escritura/borrado
+    (function () {
+        const el = document.getElementById('typewriter-text');
+        const frases = [
+            "Creo soluciones que no solo funcionan, sino que brillan en la oscuridad del espacio digital.",
+            "Transformo ideas en código que brilla y experiencias que impactan en el universo digital.",
+            "Construyo software que enciende la noche: funcional, elegante y con alma de explorador."
+        ];
+        const typewriterDelay = 40;
+        const deleteDelay = 15;
+        const pauseDelay = 2500;
+        let fraseIndex = 0;
+        let charIndex = 0;
+        let isDeleting = false;
 
-    let divActual = true;
-    class MostrarCont {
-      static cont1 () {
-        divActual = false;
-        contenido1.style.display = "";
-        contenido2.style.display = "none";
-      }
-      static cont2 () {
-        divActual = true;
-        contenido1.style.display = "none";
-        contenido2.style.display = "";
-      }
+        function tick() {
+            const fraseActual = frases[fraseIndex];
+            if (!isDeleting) {
+                el.textContent = fraseActual.substring(0, charIndex + 1);
+                charIndex++;
+                if (charIndex === fraseActual.length) {
+                    setTimeout(() => { isDeleting = true; tick(); }, pauseDelay);
+                    return;
+                }
+                setTimeout(tick, typewriterDelay);
+            } else {
+                el.textContent = fraseActual.substring(0, charIndex - 1);
+                charIndex--;
+                if (charIndex === 0) {
+                    isDeleting = false;
+                    fraseIndex = (fraseIndex + 1) % frases.length;
+                    setTimeout(tick, typewriterDelay);
+                    return;
+                }
+                setTimeout(tick, deleteDelay);
+            }
+        }
+
+        tick();
+    })();
+
+    // GLightbox: preview de imagen al hacer click
+    GLightbox({ selector: '.glightbox', touchNavigation: true, loop: true });
+
+    // Abrir acordeón desde URL hash
+    if (window.location.hash) {
+        const id = window.location.hash.substring(1);
+        const target = document.getElementById(id);
+        if (target) {
+            setTimeout(() => {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                const accordion = target.querySelector('.accordion');
+                if (accordion) {
+                    accordion.classList.add('active');
+                }
+            }, 100);
+        }
     }
-    MostrarCont.cont1()
-
-    function changeDiv() {
-      if (divActual) MostrarCont.cont1()
-      else MostrarCont.cont2()
-    }
-
 </script>
+}
