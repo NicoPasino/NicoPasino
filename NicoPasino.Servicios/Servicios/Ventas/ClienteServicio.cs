@@ -105,6 +105,14 @@ namespace NicoPasino.Servicios.Servicios.Ventas
         public async Task<bool> Create(ClienteDto obj) {
             ValidarDatos(obj);
 
+            var existente = await _repoG.GetAsync(filtro: c => c.Documento == obj.Documento || c.Correo == obj.Correo);
+            if (existente != null) {
+                if (existente.Documento == obj.Documento)
+                    throw new DataException($"Ya existe un cliente con el DNI '{obj.Documento}'.");
+                if (existente.Correo == obj.Correo)
+                    throw new DataException($"Ya existe un cliente con el correo '{obj.Correo}'.");
+            }
+
             var objeto = obj.Adapt<Cliente>();
             var res = await _repoG.Add(objeto);
 
@@ -118,12 +126,19 @@ namespace NicoPasino.Servicios.Servicios.Ventas
             var objDb = await _repoG.GetAsync(filtro: x => x.Documento == obj.Documento, incluir: "Venta");
             if (objDb == null) throw new DataException("Objeto original no encontrado.");
 
-            // TODO: comparar con datos originales
-            //if (obj == objDb) throw new MovieDataException("Se recibieron datos sin cambios, No se actualizó."); // FIXME:
+            // verificar duplicados excluyendo el registro actual
+            var duplicados = await _repoG.ListarAsync(filtro: c =>
+                (c.Documento == obj.Documento || c.Correo == obj.Correo) && c.Id != objDb.Id);
+            var dup = duplicados.FirstOrDefault();
+            if (dup != null) {
+                if (dup.Documento == obj.Documento)
+                    throw new DataException($"Ya existe otro cliente con el DNI '{obj.Documento}'.");
+                if (dup.Correo == obj.Correo)
+                    throw new DataException($"Ya existe otro cliente con el correo '{obj.Correo}'.");
+            }
 
             // mapear
             var objeto = obj.Adapt<Cliente>();
-            //objeto.Id = objDb.Id;
 
             // subir
             var res = await _repoG.Update(objeto);

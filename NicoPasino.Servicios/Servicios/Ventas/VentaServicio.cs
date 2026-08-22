@@ -119,32 +119,41 @@ namespace NicoPasino.Servicios.Servicios.Ventas
             if (obj.DNI != null) {
                 var cliente = await _repoCliente.GetAsync(filtro: c => c.Documento == obj.DNI);
                 if (cliente != null) {
-                    // Si ya existe el cliente, reutilizar su Id y NO crear uno nuevo
                     obj.IdCliente = cliente.Id;
                 }
                 else {
-                    // Sólo validar y crear si no existe
-                    if (string.IsNullOrWhiteSpace(obj.Nombre)) {
-                        throw new DataException("Nombre vacío o no válido.");
-                    }
-
-                    try {
-                        var nuevoCliente = new Cliente { Documento = (int)obj.DNI, Nombre = obj.Nombre };
-                        var res = await _repoCliente.Add(nuevoCliente);
-
-                        obj.IdCliente = res.Id;
-                    }
-                    catch (Exception ex) {
-                        throw new UpdateException("Error al crear Cliente: desde el Servicio de Venta.");
-                    }
+                    throw new DataException($"El cliente con el DNI '{obj.DNI}' No existe.");
                 }
             }
-            else throw new DataException("No se recibió DNI.");
+            else throw new DataException("No se recibió el DNI del cliente.");
 
             // Verificar productos
+            List<Producto> productosValidados;
+            int[] ids;
+            int[] cants;
+
             if (obj.ItemsId != null && obj.ItemsCant != null) {
                 if (obj.ItemsId.ToArray().Length != obj.ItemsCant.ToArray().Length)
-                    throw new DataException("ItemsId e ItemsCant deben tener la misma longitud.");
+                    throw new DataException("La lista de productos no coincide con la lista de cantidades.");
+
+                ids = obj.ItemsId.ToArray();
+                cants = obj.ItemsCant.ToArray();
+                productosValidados = new List<Producto>(ids.Length);
+
+                for (int i = 0; i < ids.Length; i++) {
+                    var idPublica = ids[i];
+                    var cantidad = cants[i];
+
+                    var productoDb = await _repoProducto.GetAsync(filtro: p => p.IdPublica == idPublica);
+                    if (productoDb == null)
+                        throw new DataException($"Producto no encontrado (código del producto: {idPublica}).");
+
+                    if (cantidad > productoDb.Cantidad)
+                        throw new DataException(
+                            $"Stock insuficiente para '{productoDb.Nombre}', cantidad solicitada: '{cantidad}', disponible: '{productoDb.Cantidad}'.");
+
+                    productosValidados.Add(productoDb);
+                }
             }
             else throw new DataException("No se recibió la lista de productos.");
 
@@ -158,33 +167,33 @@ namespace NicoPasino.Servicios.Servicios.Ventas
             };
 
             // Guardar venta
-            var ventaGuardada = await _repoG.Add(venta); // TODO: saveChanges al final
-            if (ventaGuardada == null) throw new DataException("No se pudo guardar la venta.");
+            var ventaGuardada = await _repoG.Add(venta);
+            if (ventaGuardada == null) throw new UpdateException("Error al guardar la venta.");
 
-            // Guardar VentaPorProducto según ItemsId / ItemsCant
-            if (obj.ItemsId != null && obj.ItemsCant != null) {
-                var ids = obj.ItemsId.ToArray();
-                var cants = obj.ItemsCant.ToArray();
+            // Guardar VentaPorProducto usando productos cacheados
+            for (int i = 0; i < ids.Length; i++) {
+                var producto = productosValidados[i];
+                var cantidad = cants[i];
 
-                for (int i = 0; i < ids.Length; i++) {
-                    var idPublica = ids[i];
-                    var cantidad = cants[i];
+                var vpp = new Ventaporproducto
+                {
+                    IdVenta = ventaGuardada.Id,
+                    IdProducto = producto.Id,
+                    Cantidad = cantidad,
+                    PrecioUnitario = producto.Precio,
+                    SubTotal = producto.Precio * cantidad
+                };
 
-                    // buscar producto por IdPublica
-                    var productoDb = await _repoProducto.GetAsync(filtro: p => p.IdPublica == idPublica);
-                    if (productoDb == null) throw new DataException($"Producto no encontrado (IdPublica={idPublica}).");
+                await _repoVpp.Add(vpp);
+            }
 
-                    var vpp = new Ventaporproducto
-                    {
-                        IdVenta = ventaGuardada.Id,
-                        IdProducto = productoDb.Id,
-                        Cantidad = cantidad,
-                        PrecioUnitario = productoDb.Precio,
-                        SubTotal = productoDb.Precio * cantidad
-                    };
+            // descontar stock
+            for (int i = 0; i < productosValidados.Count; i++) {
+                var producto = productosValidados[i];
+                producto.Cantidad -= cants[i];
 
-                    await _repoVpp.Add(vpp);
-                }
+                var res = await _repoProducto.Update(producto);
+                if (res <= 0) throw new UpdateException("No se pudo actualizar el stock del producto.");
             }
             return true;
         }

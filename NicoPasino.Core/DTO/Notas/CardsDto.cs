@@ -11,7 +11,7 @@ public partial class CardsDto
     public string Header { get; set; }
 
     [Required(ErrorMessage = "El texto es requerido.")]
-    [StringLength(500, MinimumLength = 1, ErrorMessage = "El texto debe tener entre 1 y 500 caracteres.")]
+    [StringLength(5000, MinimumLength = 1, ErrorMessage = "El texto debe tener entre 1 y 5000 caracteres.")]
     public string Text { get; set; }
 
     [StringLength(50, ErrorMessage = "La fecha no puede tener más de 50 caracteres.")]

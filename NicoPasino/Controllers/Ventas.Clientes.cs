@@ -53,7 +53,7 @@ namespace NicoPasino.Controllers
                 else throw new Exception();
             }
             catch (DataException ex) {
-                return BadRequest(new { error = ex.Message }); // 400
+                return BadRequest(new { message = ex.Message }); // 400
             }
             catch (Exception ex) {
                 return new ObjectResult("Error de servidor: StatusCode 500") { StatusCode = 500 };
@@ -70,10 +70,10 @@ namespace NicoPasino.Controllers
                 else throw new Exception();
             }
             catch (DataException ex) {
-                return BadRequest(new { error = ex.Message }); // 400
+                return BadRequest(new { message = ex.Message }); // 400
             }
             catch (Exception ex) {
-                return new ObjectResult("Error de servidor: StatusCode 500. "/* + ex.Message*/) { StatusCode = 500 };
+                return new ObjectResult("Error de servidor: StatusCode 500. ") { StatusCode = 500 };
             }
         }
 

@@ -36,7 +36,7 @@ namespace NicoPasino.Controllers
             try {
                 var obj = await _ventaServicio.GetById(id);
                 return Ok(obj);
-                // return NotFound(new { mensaje = "Producto no encontrado" }); // 404
+                //return NotFound(new { mensaje = "Producto no encontrado" }); // 404
             }
             catch (Exception ex) {
                 return new ObjectResult("Error de servidor: StatusCode 500") { StatusCode = 500 };
@@ -53,7 +53,10 @@ namespace NicoPasino.Controllers
                 else throw new Exception();
             }
             catch (DataException ex) {
-                return BadRequest(new { error = ex.Message }); // 400
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (UpdateException ex) {
+                return StatusCode(500, $"Error interno (500): {ex.Message}");
             }
             catch (Exception ex) {
                 return new ObjectResult("Error de servidor: StatusCode 500") { StatusCode = 500 };

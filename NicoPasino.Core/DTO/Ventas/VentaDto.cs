@@ -21,14 +21,14 @@ namespace NicoPasino.Core.DTO.Ventas
         [Range(10000000, 99999999, ErrorMessage = "El DNI debe tener 8 dígitos.")]
         public int? DNI { get; set; }
 
-        [StringLength(100, MinimumLength = 4, ErrorMessage = "El nombre debe tener entre 4 y 100 caracteres.")]
-        public string? Nombre { get; set; }
+        /*[StringLength(100, MinimumLength = 4, ErrorMessage = "El nombre debe tener entre 4 y 100 caracteres.")]
+        public string? Nombre { get; set; }*/
 
-        [Required(ErrorMessage = "Los items son requeridos.")]
-        [MinLength(1, ErrorMessage = "Debe haber al menos un item.")]
+        [Required(ErrorMessage = "La lista de productos es requerido.")]
+        [MinLength(1, ErrorMessage = "Debe haber al menos un producto.")]
         public IEnumerable<int>? ItemsId { get; set; }
 
-        [Required(ErrorMessage = "Las cantidades son requeridas.")]
+        [Required(ErrorMessage = "La lista de cantidades es requerido.")]
         [MinLength(1, ErrorMessage = "Debe haber al menos una cantidad.")]
         public IEnumerable<int>? ItemsCant { get; set; }
 
