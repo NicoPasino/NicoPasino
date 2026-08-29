@@ -33,16 +33,18 @@ public partial class notasdbContext : DbContext
                 .IsRequired()
                 .HasMaxLength(20)
                 .HasColumnName("color");
-            entity.Property(e => e.Fecha)
+            entity.Property(e => e.FechaCreacion)
+                .IsRequired()
                 .HasMaxLength(50)
-                .HasColumnName("fecha");
+                .HasColumnName("fechaCreacion");
+            entity.Property(e => e.FechaModificacion)
+                .IsRequired()
+                .HasMaxLength(50)
+                .HasColumnName("fechaModificacion");
             entity.Property(e => e.Header)
                 .IsRequired()
                 .HasMaxLength(50)
                 .HasColumnName("header");
-            entity.Property(e => e.Hora)
-                .HasColumnType("time")
-                .HasColumnName("hora");
             entity.Property(e => e.IdPublica).HasColumnName("idPublica");
             entity.Property(e => e.Name)
                 .HasMaxLength(50)

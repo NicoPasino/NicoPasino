@@ -21,6 +21,7 @@ namespace NicoPasino.Controllers
         public async Task<ActionResult> GetAll() {
             try {
                 var objs = await _notasServicio.GetAll(true);
+                //await Task.Delay(3000); // 2000 ms = 2 segundos
                 return Ok(objs);
             }
             catch (Exception ex) {
@@ -78,8 +79,11 @@ namespace NicoPasino.Controllers
         public async Task<IActionResult> Eliminar(int id) {
             try {
                 var res = await _notasServicio.Enable(id, false);
-                if (res) return new ObjectResult(new { Ok = "true" }) { StatusCode = 204 };
+                if (res) return StatusCode(202, "Elemento Eliminado");
                 else return new ObjectResult(new { message = "No se pudo eliminar." });
+            }
+            catch (DataException ex) {
+                return BadRequest(new { message = ex.Message }); // 400
             }
             catch (Exception ex) {
                 return StatusCode(500, new { error = "Error desde el servidor." });

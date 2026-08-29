@@ -3,7 +3,6 @@ using NicoPasino.Core.DTO.Notas;
 using NicoPasino.Core.Errores;
 using NicoPasino.Core.Interfaces;
 using NicoPasino.Core.Modelos.Notas;
-using NicoPasino.Core.Utils;
 
 namespace NicoPasino.Servicios.Servicios.Notas
 {
@@ -15,10 +14,10 @@ namespace NicoPasino.Servicios.Servicios.Notas
         }
 
         public async Task<IEnumerable<CardsDto>> GetAll(bool activo) {
+            //return Enumerable.Empty<CardsDto>();
             try {
                 var objsDb = await _repoG.ListarAsync(
-                //orden: q => q.OrderByDescending(m => m.FechaModificacion) // TODO: agregar timestamp fechamodificacion
-                //orden: q => q.OrderByDescending(m => m.Id) // TODO: agregar timestamp fechamodificacion
+                    orden: q => q.OrderByDescending(m => m.FechaModificacion)
                 );
 
                 if (objsDb != null && objsDb.Any()) {
@@ -50,13 +49,11 @@ namespace NicoPasino.Servicios.Servicios.Notas
             if (obj == null) throw new DataException("No se recibió ningún dato.");
             if (ValidateObj(obj)) throw new DataException("Titulo y/o Texto vacíos.");
 
-
-            obj.Id = random.Next(1, 9999999); // id -> IdPublica
             var objeto = obj.Adapt<Cards>();
-
-            var tiempoActual = DateHelper.GetDate();
-            objeto.Fecha = tiempoActual.fecha;
-            objeto.Hora = tiempoActual.hora;
+            objeto.Id = 0;
+            objeto.IdPublica = random.Next(1, 9999999);
+            objeto.FechaCreacion = DateTime.UtcNow;
+            objeto.FechaModificacion = DateTime.UtcNow;
 
             var res = await _repoG.Add(objeto);
 
@@ -70,27 +67,26 @@ namespace NicoPasino.Servicios.Servicios.Notas
             if (ValidateObj(obj)) throw new DataException("Titulo y/o Texto vacíos.");
 
             var objDb = await _repoG.GetAsync(filtro: x => x.IdPublica == obj.Id);
-            if (objDb == null) throw new DataException("Objeto original no encontrado.");
+            if (objDb == null) throw new DataException("Nota original no encontrada en la base de datos.");
 
             var objeto = obj.Adapt<Cards>();
 
-            var tiempoActual = DateHelper.GetDate();
             objeto.Id = objDb.Id;
             objeto.IdPublica = obj.Id;
-            objeto.Fecha = tiempoActual.fecha;
-            objeto.Hora = tiempoActual.hora;
+            objeto.FechaCreacion = objDb.FechaCreacion;
+            objeto.FechaModificacion = DateTime.UtcNow;
 
             Cards objetoRdy = objeto.Adapt<Cards>();
 
             var res = await _repoG.Update(objetoRdy);
 
             if (res > 0) return true;
-            else throw new UpdateException("No se pudo actualizar en la base de datos.");
+            else throw new UpdateException("No se pudo actualizar la Nota en la base de datos.");
         }
 
         public async Task<bool> Enable(int id, bool estado) {
             var objDb = await _repoG.GetAsync(filtro: x => x.IdPublica == id);
-            if (objDb == null) throw new DataException("Objeto original no encontrado.");
+            if (objDb == null) throw new DataException("Nota original no encontrada en la base de datos.");
 
             await _repoG.Delete(objDb);
 

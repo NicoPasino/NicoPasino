@@ -15,9 +15,9 @@ public partial class Cards
 
     public string Text { get; set; }
 
-    public string Fecha { get; set; }
+    public DateTime FechaCreacion { get; set; }
 
-    public TimeOnly Hora { get; set; }
+    public DateTime FechaModificacion { get; set; }
 
     public string Name { get; set; }
 

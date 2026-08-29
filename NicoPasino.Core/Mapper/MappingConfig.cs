@@ -27,7 +27,6 @@ namespace NicoPasino.Core.Mapper
 
         public static void NotasMappings() {
             TypeAdapterConfig<Cards, CardsDto>.NewConfig()
-                .TwoWays()
                 .Map(dest => dest.Id, src => src.IdPublica);
         }
     }
