@@ -6,7 +6,7 @@ using NicoPasino.Core.Modelos.Notas;
 
 namespace NicoPasino.Servicios.Servicios.Notas
 {
-    public class NotasServicio : IServicioGenerico<Cards, CardsDto>
+    public class NotasServicio : INotasServicio
     {
         private readonly IRepositorioGenerico<Cards> _repoG;
         public NotasServicio(IRepositorioGenerico<Cards> repoG) {
@@ -32,7 +32,7 @@ namespace NicoPasino.Servicios.Servicios.Notas
         }
 
         public async Task<CardsDto> GetById(int id) {
-            if (id <= 0) return null;
+            if (id <= 0) throw new NotFoundException("Id de la Nota no válida.");
             var objDb = await _repoG.GetAsync(
                 filtro: item => item.IdPublica == id // id -> IdPublica
             );
@@ -41,7 +41,7 @@ namespace NicoPasino.Servicios.Servicios.Notas
                 var objDto = objDb.Adapt<CardsDto>();
                 return objDto;
             }
-            else return null;
+            else throw new NotFoundException("Nota no encontrada.");
         }
 
         public async Task<bool> Create(CardsDto obj) {
@@ -58,7 +58,6 @@ namespace NicoPasino.Servicios.Servicios.Notas
             var res = await _repoG.Add(objeto);
 
             return (res != null);
-            //return true;
         }
 
 
@@ -73,8 +72,10 @@ namespace NicoPasino.Servicios.Servicios.Notas
 
             objeto.Id = objDb.Id;
             objeto.IdPublica = obj.Id;
-            objeto.FechaCreacion = objDb.FechaCreacion;
             objeto.FechaModificacion = DateTime.UtcNow;
+            objeto.FechaCreacion = objDb.FechaCreacion;
+            objeto.Archivado = objDb.Archivado;
+            objeto.Eliminado = objDb.Eliminado;
 
             Cards objetoRdy = objeto.Adapt<Cards>();
 
@@ -84,13 +85,35 @@ namespace NicoPasino.Servicios.Servicios.Notas
             else throw new UpdateException("No se pudo actualizar la Nota en la base de datos.");
         }
 
-        public async Task<bool> Enable(int id, bool estado) {
+        public async Task<bool> UpdatePatch(int id, CardsPatchDto obj) {
+            if (obj == null) throw new DataException("No se recibió ningún dato.");
+
             var objDb = await _repoG.GetAsync(filtro: x => x.IdPublica == id);
             if (objDb == null) throw new DataException("Nota original no encontrada en la base de datos.");
 
-            await _repoG.Delete(objDb);
+            if (!string.IsNullOrWhiteSpace(obj.Header)) objDb.Header = obj.Header;
+            if (!string.IsNullOrWhiteSpace(obj.Text)) objDb.Text = obj.Text;
+            if (!string.IsNullOrWhiteSpace(obj.Name)) objDb.Name = obj.Name;
+            if (!string.IsNullOrWhiteSpace(obj.Color)) objDb.Color = obj.Color;
+            if (obj.Favorito.HasValue) objDb.Favorito = obj.Favorito.Value;
+            if (obj.Archivado.HasValue) objDb.Archivado = obj.Archivado.Value;
+            if (obj.Eliminado.HasValue) objDb.Eliminado = obj.Eliminado.Value;
 
-            return true;
+            objDb.FechaModificacion = DateTime.UtcNow;
+
+            var res = await _repoG.Update(objDb);
+
+            if (res > 0) return true;
+            else throw new UpdateException("No se pudo actualizar la Nota en la base de datos.");
+        }
+
+        public async Task<bool> Enable(int id, bool estado) {
+            var objDb = await _repoG.GetAsync(filtro: x => x.IdPublica == id);
+            if (objDb == null) throw new DataException("Nota original no encontrada en la base de datos.");
+            else {
+                await _repoG.Delete(objDb);
+                return true;
+            }
         }
 
         public Task<IEnumerable<CardsDto>> GetAll(string campo, string? valor) {

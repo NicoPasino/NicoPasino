@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.RateLimiting;
 using NicoPasino.Core.DTO.Notas;
 using NicoPasino.Core.Errores;
 using NicoPasino.Core.Interfaces;
-using NicoPasino.Core.Modelos.Notas;
 
 namespace NicoPasino.Controllers
 {
@@ -12,8 +11,8 @@ namespace NicoPasino.Controllers
     [EnableRateLimiting("general")]
     public class NotesController : Controller
     {
-        private readonly IServicioGenerico<Cards, CardsDto> _notasServicio;
-        public NotesController(IServicioGenerico<Cards, CardsDto> nServicio) {
+        private readonly INotasServicio _notasServicio;
+        public NotesController(INotasServicio nServicio) {
             _notasServicio = nServicio;
         }
 
@@ -34,7 +33,10 @@ namespace NicoPasino.Controllers
             try {
                 var obj = await _notasServicio.GetById(id);
                 if (obj?.Id != null) return Ok(obj);
-                else return NotFound(new { message = "Elemento no encontrado" }); // 404
+                else throw new NotFoundException("Nota no encontrada.");
+            }
+            catch (NotFoundException ex) {
+                return NotFound(new { message = ex.Message }); // 404
             }
             catch (Exception ex) {
                 return StatusCode(500, new { error = "Error desde el servidor." });
@@ -64,6 +66,23 @@ namespace NicoPasino.Controllers
                 if (objeto == null) throw new DataException("Datos inválidos, por favor revisar.");
 
                 var ok = await _notasServicio.Update(objeto);
+                if (ok) return StatusCode(202, "Elemento Actualizado");
+                else throw new Exception();
+            }
+            catch (DataException ex) {
+                return BadRequest(new { message = ex.Message }); // 400
+            }
+            catch (Exception ex) {
+                return StatusCode(500, new { error = "Error desde el servidor." });
+            }
+        }
+
+        [HttpPatch("{id}")]
+        public async Task<IActionResult> ActualizarParcial(int id, [FromBody] CardsPatchDto objeto) {
+            try {
+                if (objeto == null) throw new DataException("Datos inválidos, por favor revisar.");
+
+                var ok = await _notasServicio.UpdatePatch(id, objeto);
                 if (ok) return StatusCode(202, "Elemento Actualizado");
                 else throw new Exception();
             }

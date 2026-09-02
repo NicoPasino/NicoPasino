@@ -22,4 +22,10 @@ public partial class Cards
     public string Name { get; set; }
 
     public string Color { get; set; }
+
+    public bool Favorito { get; set; }
+
+    public bool Archivado { get; set; }
+
+    public bool Eliminado { get; set; }
 }

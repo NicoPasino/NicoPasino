@@ -1,7 +1,5 @@
 using dotenv.net;
-using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
-using NicoPasino.Core.DTO.Notas;
 using NicoPasino.Core.DTO.Ventas;
 using NicoPasino.Core.Interfaces;
 using NicoPasino.Core.Mapper;
@@ -22,7 +20,8 @@ namespace NicoPasino
             var builder = WebApplication.CreateBuilder(args);
 
             // Forzar a que escuche en todas las interfaces en el puerto 5000
-            //builder.WebHost.UseUrls("https://0.0.0.0:5000"); // TODO: DESACTIVARRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
+            // para poder conectar dispositivos en la misma red (android)
+            //builder.WebHost.UseUrls("http://0.0.0.0:5000");
 
             DotEnv.Load(); // leer .env
 
@@ -73,7 +72,7 @@ namespace NicoPasino
             builder.Services.AddScoped<IServicioGenerico<Cliente, ClienteDto>, ClienteServicio>();
             builder.Services.AddScoped<IServicioGenerico<Categoria, CategoriaDto>, CategoriaServicio>();
 
-            builder.Services.AddScoped<IServicioGenerico<Cards, CardsDto>, NotasServicio>();
+            builder.Services.AddScoped<INotasServicio, NotasServicio>();
 
             // cambiar texto de validaci�n de la vista
             builder.Services.AddRazorPages()
@@ -93,7 +92,8 @@ namespace NicoPasino
                 options.AddPolicy("general", httpContext =>
                     RateLimitPartition.GetFixedWindowLimiter(
                         partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
-                        factory: _ => new FixedWindowRateLimiterOptions {
+                        factory: _ => new FixedWindowRateLimiterOptions
+                        {
                             PermitLimit = 100,
                             Window = TimeSpan.FromMinutes(1),
                             QueueLimit = 0,

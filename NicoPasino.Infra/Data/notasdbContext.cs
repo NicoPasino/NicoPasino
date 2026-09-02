@@ -53,6 +53,18 @@ public partial class notasdbContext : DbContext
                 .IsRequired()
                 .HasMaxLength(500)
                 .HasColumnName("text");
+            entity.Property(e => e.Favorito)
+                .HasDefaultValueSql("b'1'")
+                .HasColumnType("bit(1)")
+                .HasColumnName("favorito");
+            entity.Property(e => e.Eliminado)
+                .HasDefaultValueSql("b'1'")
+                .HasColumnType("bit(1)")
+                .HasColumnName("eliminado");
+            entity.Property(e => e.Archivado)
+                .HasDefaultValueSql("b'1'")
+                .HasColumnType("bit(1)")
+                .HasColumnName("archivado");
         });
 
         OnModelCreatingPartial(modelBuilder);
