@@ -3,12 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using NicoPasino.Core.DTO.Ventas;
 using NicoPasino.Core.Interfaces;
 using NicoPasino.Core.Mapper;
-using NicoPasino.Core.Modelos.Notas;
 using NicoPasino.Core.Modelos.Ventas;
 using NicoPasino.Infra.Data;
 using NicoPasino.Infra.Repositorio;
-using NicoPasino.Servicios.Servicios.Movies;
-using NicoPasino.Servicios.Servicios.Notas;
 using NicoPasino.Servicios.Servicios.Ventas;
 using System.Threading.RateLimiting;
 
@@ -36,13 +33,6 @@ namespace NicoPasino
 
             // Configuraciones para Mapster
             MappingConfig.VentasMappings();
-            MappingConfig.NotasMappings();
-
-            // conexi�n a pel�culas
-            var moviesdb = Environment.GetEnvironmentVariable("movies");
-            builder.Services.AddDbContext<moviesdbContext>(options =>
-                options.UseMySql(moviesdb, new MySqlServerVersion(new Version(8, 0, 39)))
-            );
 
             // conexi�n a ventas
             var ventasdb = Environment.GetEnvironmentVariable("ventas");
@@ -50,29 +40,14 @@ namespace NicoPasino
                 options.UseMySql(ventasdb, new MySqlServerVersion(new Version(8, 0, 39)))
             );
 
-            // conexi�n a notas
-            var notasdb = Environment.GetEnvironmentVariable("notas");
-            builder.Services.AddDbContext<notasdbContext>(options =>
-                options.UseMySql(notasdb, new MySqlServerVersion(new Version(8, 0, 39))) // version de aws?
-            );
-
-
             // permitir inyecci�n (Repositorio => conexi�n con dbContext)
-            builder.Services.AddScoped<IUnitOfWorkMovie, UnitOfWorkMovie>();
-            builder.Services.AddScoped(typeof(IRepositorioGenerico<>), typeof(RepositorioGenericoMovies<>));
             builder.Services.AddScoped(typeof(IRepositorioGenericoVentas<>), typeof(RepositorioGenericoVentas<>));
-            builder.Services.AddScoped(typeof(IRepositorioGenerico<Cards>), typeof(RepositorioGenericoNotes<Cards>));
 
             // Servicios
-            builder.Services.AddScoped<IMovieServicio, MovieServicio>();
-            builder.Services.AddScoped<IGeneroServicio, GeneroServicio>();
-
             builder.Services.AddScoped<IServicioGenerico<Producto, ProductoDto>, ProductoServicio>();
             builder.Services.AddScoped<IServicioGenerico<Venta, VentaDto>, VentaServicio>();
             builder.Services.AddScoped<IServicioGenerico<Cliente, ClienteDto>, ClienteServicio>();
             builder.Services.AddScoped<IServicioGenerico<Categoria, CategoriaDto>, CategoriaServicio>();
-
-            builder.Services.AddScoped<INotasServicio, NotasServicio>();
 
             // cambiar texto de validaci�n de la vista
             builder.Services.AddRazorPages()
