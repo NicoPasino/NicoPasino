@@ -18,7 +18,7 @@ namespace NicoPasino
 
             // Forzar a que escuche en todas las interfaces en el puerto 5000
             // para poder conectar dispositivos en la misma red (android)
-            //builder.WebHost.UseUrls("http://0.0.0.0:5000");
+            builder.WebHost.UseUrls("http://0.0.0.0:5000");
 
             DotEnv.Load(); // leer .env
 
