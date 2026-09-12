@@ -40,7 +40,7 @@ namespace NicoPasino
                 options.UseMySql(ventasdb, new MySqlServerVersion(new Version(8, 0, 39)))
             );
 
-            // permitir inyecci�n (Repositorio => conexi�n con dbContext)
+            // permitir inyeccion (Repositorio => conexion con dbContext)
             builder.Services.AddScoped(typeof(IRepositorioGenericoVentas<>), typeof(RepositorioGenericoVentas<>));
 
             // Servicios
@@ -49,7 +49,7 @@ namespace NicoPasino
             builder.Services.AddScoped<IServicioGenerico<Cliente, ClienteDto>, ClienteServicio>();
             builder.Services.AddScoped<IServicioGenerico<Categoria, CategoriaDto>, CategoriaServicio>();
 
-            // cambiar texto de validaci�n de la vista
+            // cambiar texto de validacion de la vista
             builder.Services.AddRazorPages()
             .AddMvcOptions(options => {
                 options.ModelBindingMessageProvider.SetValueMustNotBeNullAccessor(
@@ -80,7 +80,7 @@ namespace NicoPasino
 
             var app = builder.Build();
 
-            // crear una base de datos a trav�s de una migraci�n
+            // crear una base de datos desde de una migracion
             /*using (var scope = app.Services.CreateScope()) {
                 var context = scope.ServiceProvider.GetRequiredService<moviesdbContext>();
                 context.Database.Migrate();
@@ -127,6 +127,3 @@ namespace NicoPasino
         }
     }
 }
-
-
-//options.UseSqlServer(builder.Configuration.GetConnectionString("MoviesConnectionString")) // SQL Server

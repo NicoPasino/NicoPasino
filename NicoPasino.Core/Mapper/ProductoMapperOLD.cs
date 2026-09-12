@@ -1,9 +1,13 @@
 ﻿using NicoPasino.Core.DTO.Ventas;
 using NicoPasino.Core.Modelos.Ventas;
 
-namespace NicoPasino.Core.Mapper.Ventas
+namespace NicoPasino.Core.Mapper
 {
-    public static class ProductoMapper
+    //
+    // Sin Uso (Mapeo manual anterior)
+    //
+
+    public static class ProductoMapperOLD
     {
         public static ProductoDto ConvertToDto(Producto modelo) {
             var objetoDTO = new ProductoDto();
@@ -18,10 +22,10 @@ namespace NicoPasino.Core.Mapper.Ventas
                 objetoDTO.FechaModificacion = modelo.FechaModificacion;
                 objetoDTO.Activo = modelo.Activo;
 
-                /*var cat = modelo.Moviegenres ?? Enumerable.Empty<Categoria>();
-                objetoDTO.IdCategoria = cat.Select(g => g.GenreId).ToList();
-                objetoDTO.genreNames = cat
-                    .Select(g => g.Genre?.Name)
+                /*var cat = modelo.ProductoCategorias ?? Enumerable.Empty<Categoria>();
+                objetoDTO.IdCategoria = cat.Select(g => g.categoriaId).ToList();
+                objetoDTO.categoriaNames = cat
+                    .Select(g => g.categoria?.Name)
                     .Where(n => !string.IsNullOrWhiteSpace(n))
                     .Distinct()
                     .ToList();*/
@@ -40,7 +44,7 @@ namespace NicoPasino.Core.Mapper.Ventas
                     listaDTO.Add(dto);
                 }
             }
-            catch (Exception ex) {
+            catch (Exception) {
             }
 
             return listaDTO;
@@ -60,11 +64,10 @@ namespace NicoPasino.Core.Mapper.Ventas
                 model.FechaCreacion = objeto.FechaCreacion;
                 model.FechaModificacion = DateTime.Now;
 
-                // NOTA: el mapeo de genre a entidades se realiza en el servicio (MovieServicio),
+                // NOTA: el mapeo de categoria a entidades se realiza en el servicio,
                 // porque el mapper no tiene acceso al contexto/repositorio.
             }
-            catch (Exception ex) {
-
+            catch (Exception) {
             }
 
             return model;
